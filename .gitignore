@@ -1,7 +1,8 @@
 */Binaries
 */Intermediate
 */Saved
-BuildingEscape/Content/StarterContent/
+BuildingEscape/Content/StarterContent/HDRI
+BuildingEscape/Content/StarterContent/Textures
 *.sdf
 *.suo
 BuildingEscape/BuildingEscape.VC.opendb
