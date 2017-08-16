@@ -43,5 +43,34 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	UKismetSystemLibrary::DrawDebugLine(GetWorld(), ownerLocation, endLoc, FLinearColor::Red, 0.0f, 2.0f);
 
+
+	//TEnumAsByte<EObjectTypeQuery> obj = EObjectTypeQuery::ObjectTypeQuery4;
+	//TArray<TEnumAsByte<EObjectTypeQuery>> arrayForObjects;
+	//arrayForObjects.Add(obj);
+	//FHitResult hitResult;
+	//UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
+	//	ownerLocation,
+	//	endLoc,
+	//	arrayForObjects,
+	//	false,
+	//	TArray<AActor*>({ GetOwner() }),
+	//	EDrawDebugTrace::None,
+	//	hitResult,
+	//	true);
+
+	FHitResult hitResult;
+	GWorld ->LineTraceSingleByObjectType(OUT hitResult,
+		ownerLocation,
+		endLoc,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
+		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
+		);
+
+
+
+
+	if (hitResult.GetActor()) {
+		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *hitResult.GetActor() ->GetName());
+	}
 }
 
