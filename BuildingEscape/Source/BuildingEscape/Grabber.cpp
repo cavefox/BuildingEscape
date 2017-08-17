@@ -5,6 +5,9 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Components/InputComponent.h"
+#include "EngineUtils.h"
 
 #define OUT
 
@@ -23,8 +26,66 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GEngine ->AddOnScreenDebugMessage(-1, 2, FColor::Green, TEXT("I'm Grabber here!"));
-	UE_LOG(LogTemp, Warning, TEXT("I'm grabber here!"));
+	FindPhysicsHandleComponent();
+	SetupInputComponent();
+
+}
+
+void UGrabber::Grabbing() {
+	UE_LOG(LogTemp, Warning, TEXT("Grab action!!!"));
+
+	GetFirstHitResultFromRay();
+
+}
+
+void UGrabber::Grabdown() {
+	UE_LOG(LogTemp, Warning, TEXT("Grab down action!!!"));
+}
+
+void UGrabber::FindPhysicsHandleComponent()
+{
+	// find physics component
+	PhysicsHandle = GetOwner() ->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle) {
+		UE_LOG(LogTemp, Warning, TEXT("You get the physicshandle correctly!"));
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("%s miss the physicshandle!"), *GetOwner() ->GetName());
+	}
+}
+
+void UGrabber::SetupInputComponent()
+{
+	// find input component
+	InputComponent = GetOwner() ->FindComponentByClass<UInputComponent>();
+	if (InputComponent) {
+		UE_LOG(LogTemp, Warning, TEXT("You get the InputComponent correctly!"));
+
+		InputComponent ->BindAction(TEXT("Grab"), IE_Pressed, this, &UGrabber::Grabbing);
+		InputComponent ->BindAction(TEXT("Grab"), IE_Released, this, &UGrabber::Grabdown);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("%s miss the InputComponent!"), *GetOwner() ->GetName());
+	}
+}
+
+const FHitResult UGrabber::GetFirstHitResultFromRay()
+{
+	FHitResult hitResult;
+	FVector startPos = GetOwner() ->GetActorLocation();
+	FVector dir(1.0f, 0.0f, 0.0f);
+	dir = GWorld ->GetFirstPlayerController() ->PlayerCameraManager ->GetTransform().TransformVector(dir);
+	FVector endPos = startPos + dir * ReachDistanceToDetect;
+
+	UKismetSystemLibrary::DrawDebugLine(GetWorld(), startPos, endPos, FLinearColor::Red, 15.0f, 5.0f);
+
+
+
+	//GWorld ->LineTraceSingleByObjectType();
+
+
+
+	return hitResult;
 }
 
 
@@ -32,45 +93,5 @@ void UGrabber::BeginPlay()
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FVector ownerLocation = GetOwner() ->GetTransform().GetLocation();
-	FRotator ownerRotator = GWorld ->GetFirstPlayerController() ->PlayerCameraManager ->GetTransform().GetRotation().Rotator();
-	FVector origin = FVector(1, 0, 0);
-	origin = GWorld ->GetFirstPlayerController() ->PlayerCameraManager ->GetTransform().TransformVector(origin);
-
-	FVector dir = origin.GetSafeNormal();
-	FVector endLoc = ownerLocation + dir * ReachDistanceToDetect;
-
-	UKismetSystemLibrary::DrawDebugLine(GetWorld(), ownerLocation, endLoc, FLinearColor::Red, 0.0f, 2.0f);
-
-
-	//TEnumAsByte<EObjectTypeQuery> obj = EObjectTypeQuery::ObjectTypeQuery4;
-	//TArray<TEnumAsByte<EObjectTypeQuery>> arrayForObjects;
-	//arrayForObjects.Add(obj);
-	//FHitResult hitResult;
-	//UKismetSystemLibrary::LineTraceSingleForObjects(GetWorld(),
-	//	ownerLocation,
-	//	endLoc,
-	//	arrayForObjects,
-	//	false,
-	//	TArray<AActor*>({ GetOwner() }),
-	//	EDrawDebugTrace::None,
-	//	hitResult,
-	//	true);
-
-	FHitResult hitResult;
-	GWorld ->LineTraceSingleByObjectType(OUT hitResult,
-		ownerLocation,
-		endLoc,
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
-		FCollisionQueryParams(FName(TEXT("")), false, GetOwner())
-		);
-
-
-
-
-	if (hitResult.GetActor()) {
-		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *hitResult.GetActor() ->GetName());
-	}
 }
 

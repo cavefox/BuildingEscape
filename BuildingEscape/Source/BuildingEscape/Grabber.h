@@ -24,8 +24,21 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual void Grabbing();
+	virtual void Grabdown();
+
 private:
 	UPROPERTY(EditAnywhere, category="Grabber(general settings)")
 	float ReachDistanceToDetect = 100;
-	
+
+	UPROPERTY()
+	class UPhysicsHandleComponent*	PhysicsHandle = nullptr;
+
+	UPROPERTY()
+	class UInputComponent* InputComponent = nullptr;
+
+	void FindPhysicsHandleComponent();
+	void SetupInputComponent();
+
+	const FHitResult GetFirstHitResultFromRay();
 };
